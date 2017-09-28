@@ -1,7 +1,7 @@
 # users
 user_id = key, contatore per l'ID utente
 user_tot = key, utenti registrati
-username:user_tot = hash, password e flag "enabled"
+username:user_id = hash, password e flag "enabled"
 user_ids = hash, username e ID
 
 # accounts
