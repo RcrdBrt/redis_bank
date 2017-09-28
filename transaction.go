@@ -31,5 +31,5 @@ func updateBalancePercentage(username string, accountName string, perc float64) 
 	if err != nil {
 		return err
 	}
-	return updateBalance(username, accountName, prevAmount/100*perc)
+	return UpdateBalance(username, accountName, prevAmount/100*perc)
 }
