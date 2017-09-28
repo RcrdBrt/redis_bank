@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func updateBalance(username string, accountName string, amount float64) error {
+func UpdateBalance(username string, accountName string, amount float64) error {
 	if !hasAccount(username, accountName) {
 		err := "Transaction in non-existent account"
 		return errors.New(err)

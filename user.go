@@ -22,7 +22,7 @@ func getUserHash(username string) string {
 	return username + ":" + getUserId(username)
 }
 
-func newUser(username string, passwd string) error {
+func NewUser(username string, passwd string) error {
 	if userExists(username) { // user already registered
 		err := "Username already registered!"
 		return errors.New(err)
@@ -46,7 +46,7 @@ func newUser(username string, passwd string) error {
 	return nil
 }
 
-func deleteUser(username string) error {
+func DeleteUser(username string) error {
 	if !userExists(username) {
 		err := "Username is not registered!"
 		return errors.New(err)

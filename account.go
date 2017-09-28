@@ -23,7 +23,7 @@ func getUserAccounts(username string) []string {
 	return r.SMembers("accounts:" + username).Val()
 }
 
-func newAccount(username string, accountName string) error {
+func NewAccount(username string, accountName string) error {
 	if hasAccount(username, accountName) {
 		err := "Account already existent"
 		return errors.New(err)
@@ -38,7 +38,7 @@ func newAccount(username string, accountName string) error {
 	return nil
 }
 
-func deleteAccount(username string, accountName string) error {
+func DeleteAccount(username string, accountName string) error {
 	if hasAccount(username, accountName) {
 		err := "Account not existent"
 		return errors.New(err)
