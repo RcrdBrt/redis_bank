@@ -8,7 +8,9 @@ import (
 func GetLastTransaction(username string, accountName string) float64 {
 	if userExists(username) && hasAccount(username, accountName) {
 		str_value := r.LRange("transactions:"+username+":"+accountName, 0, 0).Val()[0]
-		return strconv.ParseFloat(str_value, 64)
+		res, _ := strconv.ParseFloat(str_value, 64)
+
+		return res
 	}
 
 	return 0
@@ -32,7 +34,7 @@ func UpdateBalance(username string, accountName string, amount float64) {
 	}
 }
 
-func RevertLastTransaction(usernames string, account string) {
+func RevertLastTransaction(username string, account string) {
 	UpdateBalance(username, accountName, GetLastTransaction(username, account))
 }
 
