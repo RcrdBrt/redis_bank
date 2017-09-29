@@ -15,11 +15,15 @@ func getUserId(username string) string {
 		return ""
 	}
 
-	return r.HGet("user_ids", username).String()
+	return r.HGet("user_ids", username).Val()
 }
 
 func getUserHash(username string) string {
 	return username + ":" + getUserId(username)
+}
+
+func NewSimpleUser(username string) error {
+	return NewUser(username, "default")
 }
 
 func NewUser(username string, passwd string) error {
@@ -29,18 +33,14 @@ func NewUser(username string, passwd string) error {
 	}
 	// brand new user
 	enc_passwd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
-	m.Lock()               // mutex ON
-	pipe := r.TxPipeline() // pipeline start
-	pipe.Incr("user_id")
-	pipe.Incr("user_tot")
-	pipe.HMSet(getUserHash(username), map[string]interface{}{
+	m.Lock() // mutex ON
+	r.Incr("user_id")
+	r.HSet("user_ids", username, r.Get("user_id").Val())
+	r.Incr("user_tot")
+	r.HMSet(getUserHash(username), map[string]interface{}{
 		"password": string(enc_passwd),
 		"enabled":  "1",
 	})
-	pipe.HSet("user_ids", username, r.Get("user_id"))
-	if _, err := pipe.Exec(); err != nil { // pipeline exec
-		return err
-	}
 	m.Unlock() // mutex OFF
 
 	return nil
@@ -54,7 +54,7 @@ func DeleteUser(username string) error {
 	m.Lock()               // mutex ON
 	pipe := r.TxPipeline() // pipeline start
 	pipe.Decr("user_tot")
-	pipe.HDel(getUserHash(username), "password", "enabled")
+	pipe.Del(getUserHash(username))
 	pipe.HDel("user_ids", username)
 	if _, err := pipe.Exec(); err != nil { // pipeline exec
 		return err
@@ -64,12 +64,12 @@ func DeleteUser(username string) error {
 	return nil
 }
 
-func authUser(username string, passwd string) bool {
+func AuthUser(username string, passwd string) bool {
 	if !userExists(username) {
 		log.Println("Username is not registered!")
 		return false
 	}
-	stored_passwd := []byte(r.HGet(getUserHash(username), "password").String())
+	stored_passwd := []byte(r.HGet(getUserHash(username), "password").Val())
 	err := bcrypt.CompareHashAndPassword(stored_passwd, []byte(passwd))
 	if err != nil {
 		log.Println()
