@@ -28,12 +28,10 @@ func NewAccount(username string, accountName string) {
 		if hasAccount(username, accountName) {
 			log.Println(accountName, "for user", username+":", "account already existent")
 		}
-		m.Lock()
 		pipe := r.TxPipeline()
 		pipe.Set("account:"+username+":"+accountName, "0", 0)
 		pipe.SAdd("accounts:"+username, accountName)
 		pipe.Exec()
-		m.Unlock()
 	} else {
 		log.Println(accountName, "for user", username+":", "user non-existent")
 	}

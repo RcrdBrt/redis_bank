@@ -35,7 +35,6 @@ func NewUser(username string, passwd string) {
 	} else {
 		// brand new user
 		enc_passwd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
-		m.Lock() // mutex ON
 		r.Incr("user_id")
 		r.HSet("user_ids", username, r.Get("user_id").Val())
 		r.Incr("user_tot")
@@ -43,7 +42,6 @@ func NewUser(username string, passwd string) {
 			"password": string(enc_passwd),
 			"enabled":  "1",
 		})
-		m.Unlock() // mutex OFF
 	}
 }
 

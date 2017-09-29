@@ -21,9 +21,9 @@ func UpdateBalance(username string, accountName string, amount float64) {
 		if !hasAccount(username, accountName) {
 			log.Println(username, "in", accountName+":", "transaction in non-existent account")
 		} else {
-			pipe := r.TxPipeline()
 			prevAmount := GetBalance(username, accountName)
 			newAmount := prevAmount + amount
+			pipe := r.TxPipeline()
 			pipe.LPush("transactions:"+username+":"+accountName, amount)
 			pipe.Set("account:"+username+":"+accountName,
 				strconv.FormatFloat(newAmount, 'f', PRECISION, 64), 0)
