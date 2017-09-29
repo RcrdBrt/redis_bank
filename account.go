@@ -42,6 +42,7 @@ func NewAccount(username string, accountName string) {
 func DeleteAccount(username string, accountName string) {
 	pipe := r.TxPipeline()
 	pipe.Del("account:" + username + ":" + accountName)
+	pipe.Del("transactions:" + username + ":" + accountName)
 	pipe.SRem("accounts:"+username, accountName)
 	pipe.Exec()
 }
