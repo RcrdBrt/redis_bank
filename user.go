@@ -9,7 +9,7 @@ func userExists(username string) bool {
 	return r.HExists("user_ids", username).Val()
 }
 
-func getUserId(username string) string {
+func GetUserId(username string) string {
 	if !userExists(username) {
 		return ""
 	}
@@ -17,8 +17,12 @@ func getUserId(username string) string {
 	return r.HGet("user_ids", username).Val()
 }
 
+func UserIsEnabled(username string) string {
+	return r.HGet(username+":"+GetUserId(username), "enabled").Val()
+}
+
 func getUserHash(username string) string {
-	return username + ":" + getUserId(username)
+	return username + ":" + GetUserId(username)
 }
 
 func NewUnsecureUser(username string) {
@@ -28,18 +32,19 @@ func NewUnsecureUser(username string) {
 func NewUser(username string, passwd string) {
 	if userExists(username) { // user already registered
 		log.Println(username+":", "username already registered!")
+	} else {
+		// brand new user
+		enc_passwd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+		m.Lock() // mutex ON
+		r.Incr("user_id")
+		r.HSet("user_ids", username, r.Get("user_id").Val())
+		r.Incr("user_tot")
+		r.HMSet(getUserHash(username), map[string]interface{}{
+			"password": string(enc_passwd),
+			"enabled":  "1",
+		})
+		m.Unlock() // mutex OFF
 	}
-	// brand new user
-	enc_passwd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
-	m.Lock() // mutex ON
-	r.Incr("user_id")
-	r.HSet("user_ids", username, r.Get("user_id").Val())
-	r.Incr("user_tot")
-	r.HMSet(getUserHash(username), map[string]interface{}{
-		"password": string(enc_passwd),
-		"enabled":  "1",
-	})
-	m.Unlock() // mutex OFF
 }
 
 func DeleteUser(username string) {
@@ -48,7 +53,7 @@ func DeleteUser(username string) {
 	}
 	pipe := r.TxPipeline() // pipeline start
 	accounts := GetUserAccounts(username)
-	user_id := getUserId(username)
+	user_id := GetUserId(username)
 	for _, val := range accounts {
 		pipe.Del("transactions:" + username + ":" + val)
 		DeleteAccount(username, val)
