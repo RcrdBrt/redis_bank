@@ -1,35 +1,37 @@
 package redis_bank
 
 import (
-	"errors"
+	"log"
 	"strconv"
 )
 
-func UpdateBalance(username string, accountName string, amount float64) error {
-	if !hasAccount(username, accountName) {
-		err := "Transaction in non-existent account"
-		return errors.New(err)
+func GetLastTransaction(username string, accountName string) float64 {
+	if userExists(username) && hasAccount(username, accountName) {
+		return r.LRange("transactions:" + username + ":" + accountName)[0].Float64()
 	}
-	m.Lock()
-	pipe := r.TxPipeline()
-	prevAmount, err := getBalance(username, accountName)
-	if err != nil {
-		return err
-	}
-	newAmount := prevAmount + amount
-	pipe.RPush("transactions:"+username+":"+accountName, newAmount)
-	pipe.Set("account:"+username+":"+accountName,
-		strconv.FormatFloat(newAmount, 'f', PRECISION, 64), 0)
-	pipe.Exec()
-	m.Unlock()
 
-	return nil
+	return 0
 }
 
-func updateBalancePercentage(username string, accountName string, perc float64) error {
-	prevAmount, err := getBalance(username, accountName)
-	if err != nil {
-		return err
+func UpdateBalance(username string, accountName string, amount float64) {
+	if userExists(username) {
+		if !hasAccount(username, accountName) {
+			log.Println(username, "in", accountName+":", "transaction in non-existent account")
+		} else {
+			pipe := r.TxPipeline()
+			prevAmount := GetBalance(username, accountName)
+			newAmount := prevAmount + amount
+			pipe.LPush("transactions:"+username+":"+accountName, amount)
+			pipe.Set("account:"+username+":"+accountName,
+				strconv.FormatFloat(newAmount, 'f', PRECISION, 64), 0)
+			pipe.Exec()
+		}
+	} else {
+		log.Println(username, accountName+":", "transaction for non-existent user")
 	}
-	return UpdateBalance(username, accountName, prevAmount/100*perc)
+}
+
+func updateBalancePercentage(username string, accountName string, perc float64) {
+	prevAmount := GetBalance(username, accountName)
+	UpdateBalance(username, accountName, prevAmount/100*perc)
 }

@@ -1,7 +1,6 @@
 package redis_bank
 
 import (
-	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 )
@@ -22,14 +21,13 @@ func getUserHash(username string) string {
 	return username + ":" + getUserId(username)
 }
 
-func NewSimpleUser(username string) error {
-	return NewUser(username, "default")
+func NewUnsecureUser(username string) {
+	NewUser(username, "default")
 }
 
-func NewUser(username string, passwd string) error {
+func NewUser(username string, passwd string) {
 	if userExists(username) { // user already registered
-		err := "Username already registered!"
-		return errors.New(err)
+		log.Println(username+":", "username already registered!")
 	}
 	// brand new user
 	enc_passwd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
@@ -42,26 +40,25 @@ func NewUser(username string, passwd string) error {
 		"enabled":  "1",
 	})
 	m.Unlock() // mutex OFF
-
-	return nil
 }
 
-func DeleteUser(username string) error {
+func DeleteUser(username string) {
 	if !userExists(username) {
-		err := "Username is not registered!"
-		return errors.New(err)
+		log.Println(username+":", "username is not registered!")
 	}
-	m.Lock()               // mutex ON
 	pipe := r.TxPipeline() // pipeline start
+	accounts := GetUserAccounts(username)
+	for _, val := range accounts {
+		pipe.Del("transactions:" + username + ":" + val)
+		DeleteAccount(username, val)
+	}
 	pipe.Decr("user_tot")
 	pipe.Del(getUserHash(username))
+	pipe.Del("accounts:" + username)
 	pipe.HDel("user_ids", username)
 	if _, err := pipe.Exec(); err != nil { // pipeline exec
-		return err
+		log.Println("DeleteUser():", err.Error())
 	}
-	m.Unlock() // mutex OFF
-
-	return nil
 }
 
 func AuthUser(username string, passwd string) bool {
