@@ -7,10 +7,15 @@ import (
 
 func GetLastTransaction(username string, accountName string) float64 {
 	if userExists(username) && hasAccount(username, accountName) {
-		str_value := r.LRange("transactions:"+username+":"+accountName, 0, 0).Val()[0]
-		res, _ := strconv.ParseFloat(str_value, 64)
+		list_name := "transactions:" + username + ":" + accountName
+		if r.LLen(list_name).Val() > 0 {
+			str_value := r.LRange(list_name, 0, 0).Val()[0]
+			res, _ := strconv.ParseFloat(str_value, 64)
 
-		return res
+			return res
+		} else {
+			return 0
+		}
 	}
 
 	return 0
