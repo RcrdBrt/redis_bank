@@ -48,13 +48,16 @@ func DeleteUser(username string) {
 	}
 	pipe := r.TxPipeline() // pipeline start
 	accounts := GetUserAccounts(username)
+	user_id := getUserId(username)
 	for _, val := range accounts {
 		pipe.Del("transactions:" + username + ":" + val)
 		DeleteAccount(username, val)
 	}
+	pipe.Del(username + ":" + user_id)
 	pipe.Decr("user_tot")
 	pipe.Del(getUserHash(username))
 	pipe.Del("accounts:" + username)
+
 	pipe.HDel("user_ids", username)
 	if _, err := pipe.Exec(); err != nil { // pipeline exec
 		log.Println("DeleteUser():", err.Error())
