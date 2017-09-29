@@ -33,7 +33,7 @@ func UpdateBalance(username string, accountName string, amount float64) {
 }
 
 func RevertLastTransaction(usernames string, account string) {
-	UpdateBalance(username, accountName, GetLastTransaction())
+	UpdateBalance(username, accountName, GetLastTransaction(username, account))
 }
 
 func updateBalancePercentage(username string, accountName string, perc float64) {
