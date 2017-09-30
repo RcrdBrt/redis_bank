@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	PRECISION int = 4 // number of digits after "." in a float64
+	// number of digits after "." in a float64
+	PRECISION int = 4
 )
 
 var r = redis.NewClient(&redis.Options{
