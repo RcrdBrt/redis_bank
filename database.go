@@ -16,7 +16,7 @@ var r *redis.Client = redis.NewClient(&redis.Options{
 	Password:     "",
 	DB:           2,
 	PoolSize:     4,
-	PoolTimeout:  30 * time.Seconds,
+	PoolTimeout:  30 * time.Second,
 	DialTimeout:  10 * time.Second,
 	ReadTimeout:  30 * time.Second,
 	WriteTimeout: 30 * time.Second,
