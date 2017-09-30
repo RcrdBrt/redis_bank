@@ -1,4 +1,4 @@
-# redis_bank
+# redisbank
 Bank concept written to familiarize with Go and Redis.
 
 ### Info
