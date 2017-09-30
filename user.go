@@ -10,8 +10,8 @@ func userExists(username string) bool {
 	return r.HExists("user_ids", username).Val()
 }
 
-// GetUserId returns the username unique (incremental) ID as a string.
-func GetUserId(username string) string {
+// GetUserID returns the username unique (incremental) ID as a string.
+func GetUserID(username string) string {
 	if !userExists(username) {
 		return ""
 	}
@@ -22,11 +22,11 @@ func GetUserId(username string) string {
 // UserIsEnabled checks whether user is enabled or not.
 // The logic in case he isn't is missing.
 func UserIsEnabled(username string) string {
-	return r.HGet(username+":"+GetUserId(username), "enabled").Val()
+	return r.HGet(username+":"+GetUserID(username), "enabled").Val()
 }
 
 func getUserHash(username string) string {
-	return username + ":" + GetUserId(username)
+	return username + ":" + GetUserID(username)
 }
 
 // NewUnsecureUser creates a new user given a username with
@@ -43,12 +43,12 @@ func NewUser(username string, passwd string) {
 		log.Println(username+":", "username already registered!")
 	} else {
 		// brand new user
-		enc_passwd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
+		encPasswd, _ := bcrypt.GenerateFromPassword([]byte(passwd), bcrypt.DefaultCost)
 		r.Incr("user_id")
 		r.HSet("user_ids", username, r.Get("user_id").Val())
 		r.Incr("user_tot")
 		r.HMSet(getUserHash(username), map[string]interface{}{
-			"password": string(enc_passwd),
+			"password": string(encPasswd),
 			"enabled":  "1",
 		})
 	}
@@ -62,12 +62,12 @@ func DeleteUser(username string) {
 	}
 	pipe := r.TxPipeline() // pipeline start
 	accounts := GetUserAccounts(username)
-	user_id := GetUserId(username)
+	userID := GetUserID(username)
 	for _, val := range accounts {
 		pipe.Del("transactions:" + username + ":" + val)
 		DeleteAccount(username, val)
 	}
-	pipe.Del(username + ":" + user_id)
+	pipe.Del(username + ":" + userID)
 	pipe.Decr("user_tot")
 	pipe.Del(getUserHash(username))
 	pipe.Del("accounts:" + username)
@@ -86,8 +86,8 @@ func AuthUser(username string, passwd string) bool {
 		log.Println("Username is not registered!")
 		return false
 	}
-	stored_passwd := []byte(r.HGet(getUserHash(username), "password").Val())
-	err := bcrypt.CompareHashAndPassword(stored_passwd, []byte(passwd))
+	storedPasswd := []byte(r.HGet(getUserHash(username), "password").Val())
+	err := bcrypt.CompareHashAndPassword(storedPasswd, []byte(passwd))
 	if err != nil {
 		log.Println()
 		return false

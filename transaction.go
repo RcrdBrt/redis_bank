@@ -10,15 +10,14 @@ import (
 // done by username in his accountName.
 func GetLastTransaction(username string, accountName string) float64 {
 	if userExists(username) && hasAccount(username, accountName) {
-		list_name := "transactions:" + username + ":" + accountName
-		if r.LLen(list_name).Val() > 0 {
-			str_value := r.LRange(list_name, 0, 0).Val()[0]
-			res, _ := strconv.ParseFloat(str_value, 64)
+		listName := "transactions:" + username + ":" + accountName
+		if r.LLen(listName).Val() > 0 {
+			strValue := r.LRange(listName, 0, 0).Val()[0]
+			res, _ := strconv.ParseFloat(strValue, 64)
 
 			return res
-		} else {
-			return 0
 		}
+		return 0
 	}
 
 	return 0

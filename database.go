@@ -11,7 +11,7 @@ const (
 	PRECISION int = 4 // number of digits after "." in a float64
 )
 
-var r *redis.Client = redis.NewClient(&redis.Options{
+var r = redis.NewClient(&redis.Options{
 	Addr:         "127.0.0.1:6379",
 	Password:     "",
 	DB:           2,
@@ -21,4 +21,4 @@ var r *redis.Client = redis.NewClient(&redis.Options{
 	ReadTimeout:  30 * time.Second,
 	WriteTimeout: 30 * time.Second,
 })
-var m sync.Mutex = sync.Mutex{}
+var m = sync.Mutex{}
