@@ -1,10 +1,13 @@
-package redis_bank
+// Package redisbank provides an API for a banking system on top of Redis.
+package redisbank
 
 import (
 	"log"
 	"strconv"
 )
 
+// GetLastTransaction returns the float64 amount of the last transaction
+// done by username in his accountName.
 func GetLastTransaction(username string, accountName string) float64 {
 	if userExists(username) && hasAccount(username, accountName) {
 		list_name := "transactions:" + username + ":" + accountName
@@ -21,6 +24,7 @@ func GetLastTransaction(username string, accountName string) float64 {
 	return 0
 }
 
+// UpdateBalance creates a new transaction of the amount given in username's accountName.
 func UpdateBalance(username string, accountName string, amount float64) {
 	if userExists(username) {
 		if !hasAccount(username, accountName) {
@@ -39,6 +43,8 @@ func UpdateBalance(username string, accountName string, amount float64) {
 	}
 }
 
+// RevertLastTransaction undoes the last transaction given a username and an accountName.
+// It does so by making a fully new transaction of the opposite amount of the reverting one.
 func RevertLastTransaction(username string, accountName string) {
 	UpdateBalance(username, accountName, -GetLastTransaction(username, accountName))
 }

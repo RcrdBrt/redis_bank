@@ -1,4 +1,5 @@
-package redis_bank
+// Package redisbank provides an API for a banking system on top of Redis.
+package redisbank
 
 import (
 	"github.com/go-redis/redis"
@@ -8,7 +9,7 @@ import (
 
 const (
 	TIMEOUT   int = 2
-	PRECISION int = 4 // number of digits after "." in the amount
+	PRECISION int = 4 // number of digits after "."
 )
 
 var r *redis.Client = redis.NewClient(&redis.Options{

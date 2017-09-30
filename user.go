@@ -1,4 +1,5 @@
-package redis_bank
+// Package redisbank provides an API for a banking system on top of Redis.
+package redisbank
 
 import (
 	"golang.org/x/crypto/bcrypt"
@@ -9,6 +10,7 @@ func userExists(username string) bool {
 	return r.HExists("user_ids", username).Val()
 }
 
+// GetUserId returns the username unique (incremental) ID as a string.
 func GetUserId(username string) string {
 	if !userExists(username) {
 		return ""
@@ -17,6 +19,8 @@ func GetUserId(username string) string {
 	return r.HGet("user_ids", username).Val()
 }
 
+// UserIsEnabled checks whether user is enabled or not.
+// The logic in case he isn't is missing.
 func UserIsEnabled(username string) string {
 	return r.HGet(username+":"+GetUserId(username), "enabled").Val()
 }
@@ -25,10 +29,15 @@ func getUserHash(username string) string {
 	return username + ":" + GetUserId(username)
 }
 
+// NewUnsecureUser creates a new user given a username with
+// the hardcoded "default" password
 func NewUnsecureUser(username string) {
 	NewUser(username, "default")
 }
 
+// NewUser creates a new user given a username and a password.
+// Username must not be in the system already or it fails.
+// There are no general restrictions for the password.
 func NewUser(username string, passwd string) {
 	if userExists(username) { // user already registered
 		log.Println(username+":", "username already registered!")
@@ -45,6 +54,8 @@ func NewUser(username string, passwd string) {
 	}
 }
 
+// DeleteUser deletes the user username from the system and
+// removes all his accounts and transactions logs.
 func DeleteUser(username string) {
 	if !userExists(username) {
 		log.Println(username+":", "username is not registered!")
@@ -67,6 +78,9 @@ func DeleteUser(username string) {
 	}
 }
 
+// AuthUser authenticates username and passwd against the database
+// and returns "true" or "false" in case it's successful or not respectively.
+// Usage of this function is still missing in this system.
 func AuthUser(username string, passwd string) bool {
 	if !userExists(username) {
 		log.Println("Username is not registered!")
