@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	// number of digits after "." in a float64
+	// PRECISION is number of digits after "." in a float64
 	PRECISION int = 4
 )
 
