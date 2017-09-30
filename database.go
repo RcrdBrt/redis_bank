@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	TIMEOUT   int = 2
-	PRECISION int = 4 // number of digits after "."
+	PRECISION int = 4 // number of digits after "." in a float64
 )
 
 var r *redis.Client = redis.NewClient(&redis.Options{
